@@ -40,9 +40,12 @@ I-class 과목 페이지에서 파일을 받으면 다운로드\I-class\<과목�
 ※ 인하대학교의 공식 프로그램이 아닙니다.
 ```
 
-**스크린샷** (1280×800 또는 640×400, 최소 1장): 직접 촬영
-1. 설정 페이지 (인식된 과목 표가 보이게)
-2. 탐색기에서 다운로드\I-class 아래 과목별 폴더에 파일이 정리된 모습
+**스크린샷** (1280×800): `store/screenshots/` 순서대로 업로드
+1. `1-folders.png` — 과목별 폴더에 저장된 모습 (그림으로 구성)
+2. `2-settings.png` — 실제 options.html을 예시 과목 데이터로 렌더링
+   - 다시 만들 때: `store/screenshots/src/`의 HTML을 크롬 headless로 1280×800 촬영
+     (`chrome --headless=new --allow-file-access-from-files --window-size=1280,800 --screenshot=out.png <html>`).
+     shot2는 같은 폴더에 `extension/options.html`(shim.js 삽입본)과 `options.js` 복사본이 필요
 
 **아이콘**: extension/icons/128.png
 

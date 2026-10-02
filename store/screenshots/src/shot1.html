@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+  .tree { padding: 22px 28px 26px; font-size: 16px; }
+  .row { display: flex; align-items: center; gap: 10px; height: 38px; border-radius: 8px; padding: 0 10px; }
+  .row.hl { background: #eaf2fe; }
+  .ind1 { margin-left: 28px; } .ind2 { margin-left: 56px; }
+  .ic { width: 22px; height: 18px; border-radius: 3px; flex: none; position: relative; }
+  .folder { background: #f2c14e; } .folder::before { content: ""; position: absolute; left: 0; top: -4px; width: 10px; height: 5px; background: #f2c14e; border-radius: 2px 2px 0 0; }
+  .file { width: 16px; height: 20px; background: #fff; border: 2px solid #c9302c; border-radius: 2px; margin: 0 3px; }
+  .file.zip { border-color: #6b7380; }
+  .meta { margin-left: auto; font-size: 13px; color: #8a929e; }
+  .new { font-size: 12px; font-weight: 700; color: #fff; background: #2f7be5; padding: 2px 8px; border-radius: 999px; margin-left: 8px; }
+  .dl { margin: 0 28px 24px; padding: 14px 18px; border: 1px dashed #b9c6d8; border-radius: 10px; font-size: 15px; color: #4a5361; }
+  .arrow { color: #2f7be5; font-weight: 700; }
+</style></head>
+<body>
+  <div class="copy">
+    <span class="tag">I-class 강의자료 자동 분류</span>
+    <h1>받은 강의자료가<br>과목 폴더로 쏙</h1>
+    <p>I-class 과목 페이지에서 파일을 받으면<br>과목 이름으로 된 폴더에 바로 저장돼요.<br>다운로드 폴더를 정리할 필요가 없어요.</p>
+    <p class="note">※ 인하대학교의 공식 프로그램이 아닙니다.</p>
+  </div>
+  <div class="win">
+    <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="addr">다운로드 › I-class</span></div>
+    <div class="tree">
+      <div class="row"><span class="ic folder"></span>I-class</div>
+      <div class="row ind1"><span class="ic folder"></span>객체지향프로그래밍 2</div>
+      <div class="row ind2"><span class="ic file"></span>5. chap10_operator.pdf<span class="meta">1.2MB</span></div>
+      <div class="row ind2"><span class="ic file zip"></span>lab05_tutor.zip<span class="meta">340KB</span></div>
+      <div class="row ind1"><span class="ic folder"></span>논리회로</div>
+      <div class="row ind1"><span class="ic folder"></span>이산구조</div>
+      <div class="row ind2 hl"><span class="ic file"></span>Lecture05.pdf<span class="new">방금 받음</span><span class="meta">2.4MB</span></div>
+      <div class="row ind1"><span class="ic folder"></span>일반수학 2</div>
+      <div class="row ind1"><span class="ic folder"></span>인하동동(2026-2)</div>
+    </div>
+    <div class="dl">이산구조 강의실에서 <b>Lecture05.pdf</b> 다운로드 <span class="arrow">→</span> I-class › 이산구조 폴더에 자동 저장</div>
+  </div>
+</body></html>
