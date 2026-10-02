@@ -1,2 +1,3 @@
 # .ps1/README.txt need UTF-8 BOM + CRLF exactly as written; never convert line endings
 * -text
+.gitattributes export-ignore
