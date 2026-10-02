@@ -6,19 +6,24 @@ const UNSORTED = "미분류";        // 과목을 못 알아냈을 때
 const CLICK_WINDOW_MS = 60 * 1000;
 const MAX_LINKS = 5000;
 
+// 서비스 워커가 깨어날 때 메시지가 동시에 와도 한 번만 읽도록 Promise를 공유
+// (각자 읽으면 나중에 읽은 쪽이 cache를 덮어써서 먼저 들어온 기록이 사라짐)
 let cache = null;
+let loading = null;
 async function state() {
-  if (!cache) {
+  if (cache) return cache;
+  loading ??= (async () => {
     const s = await chrome.storage.session.get(["links", "tabs", "lastClick"]);
     const l = await chrome.storage.local.get(["courses"]);
     cache = {
       links: s.links || {},
       tabs: s.tabs || {},
       lastClick: s.lastClick || null,
-      courses: l.courses || {}   // courseId -> { code, semester, name }
+      courses: l.courses || {}   // courseId -> { code, semester, name } (비교과는 code가 "")
     };
-  }
-  return cache;
+    return cache;
+  })();
+  return loading;
 }
 async function save() {
   const { links, tabs, lastClick, courses } = cache;
@@ -36,6 +41,23 @@ function norm(url) {
   } catch (_) {
     return url;
   }
+}
+
+// 강의자료 번호(cmid). 강의실의 /mod/ubfile/view.php?id=N 과
+// 문서 뷰어의 /local/ubdoc/?id=N, /local/ubdoc/download.php?id=N 이 같은 N을 씀
+function cmKey(url) {
+  try {
+    const u = new URL(url);
+    const id = u.searchParams.get("id");
+    if (id && /^\/(mod\/\w+|local\/ubdoc)\//.test(u.pathname)) return "cm:" + id;
+  } catch (_) {}
+  return null;
+}
+
+function remember(links, url, courseId) {
+  links[norm(url)] = courseId;
+  const cm = cmKey(url);
+  if (cm) links[cm] = courseId;
 }
 
 // Windows/Mac에서 폴더 이름으로 쓸 수 없는 문자 정리
@@ -68,14 +90,14 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
         };
       }
       if (sender.tab) st.tabs[sender.tab.id] = msg.courseId;
-      for (const l of msg.links) st.links[norm(l)] = msg.courseId;
+      for (const l of msg.links) remember(st.links, l, msg.courseId);
       const keys = Object.keys(st.links);
       if (keys.length > MAX_LINKS) {
         for (const k of keys.slice(0, keys.length - MAX_LINKS)) delete st.links[k];
       }
     } else if (msg.type === "click") {
       st.lastClick = { courseId: msg.courseId, time: Date.now() };
-      st.links[norm(msg.href)] = msg.courseId;
+      remember(st.links, msg.href, msg.courseId);
     }
     await save();
   })();
@@ -101,7 +123,9 @@ function isIclass(url) {
 async function resolveCourseId(item) {
   const st = await state();
   for (const u of [item.url, item.finalUrl, item.referrer]) {
-    if (u && st.links[norm(u)]) return st.links[norm(u)];
+    if (!u) continue;
+    const hit = st.links[norm(u)] || st.links[cmKey(u)];
+    if (hit) return hit;
   }
   if (item.referrer) {
     try {
@@ -125,7 +149,7 @@ async function folderFor(item) {
   const c = courseId && st.courses[courseId];
   if (!c) return UNSORTED;
   const { bySemester, folderNames } = await chrome.storage.sync.get({ bySemester: false, folderNames: {} });
-  const course = safeName(folderNames[c.code] || c.name) || c.code;
+  const course = safeName(folderNames[c.code || "id:" + courseId] || c.name) || c.code || UNSORTED;
   return bySemester && c.semester ? `${semesterLabel(c.semester)}/${course}` : course;
 }
 

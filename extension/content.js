@@ -17,6 +17,7 @@ function coursesIn(text) {
 }
 
 // 과목 찾기: 탭 제목 → 상단 경로/제목 영역 순으로, 과목이 딱 하나만 보일 때만 인정
+// (I-class 탭 제목은 항상 "인하대학교 I-Class"라서 실제로는 .coursename / h1에서 찾음)
 function detectCourse() {
   const candidates = [document.title];
   const selectors = [
@@ -30,6 +31,10 @@ function detectCourse() {
     const cs = coursesIn(text);
     if (cs.length === 1) return cs[0];
   }
+  // 비교과처럼 과목 코드가 없는 강좌: 강좌 제목(.coursename)을 이름으로 사용
+  const titles = [...document.querySelectorAll(".coursename")]
+    .map((el) => el.textContent.trim()).filter(Boolean);
+  if (titles.length === 1) return { code: "", semester: "", name: titles[0] };
   return null;
 }
 

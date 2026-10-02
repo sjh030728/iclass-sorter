@@ -17,15 +17,17 @@ function cell(tr, text) {
 }
 
 // 폴더 이름은 과목 코드(예: CSE1103) 기준으로 chrome.storage.sync.folderNames에 저장
+// 비교과처럼 코드가 없으면 "id:<강좌 번호>"를 키로 씀 (background.js folderFor와 같은 규칙)
 function folderInput(c, folderNames) {
+  const key = c.code || "id:" + c.id;
   const input = document.createElement("input");
-  input.value = folderNames[c.code] || "";
+  input.value = folderNames[key] || "";
   input.placeholder = c.name || c.code;
   input.addEventListener("change", () => {
     chrome.storage.sync.get({ folderNames: {} }, ({ folderNames }) => {
       const v = input.value.trim();
-      if (v) folderNames[c.code] = v;
-      else delete folderNames[c.code];
+      if (v) folderNames[key] = v;
+      else delete folderNames[key];
       chrome.storage.sync.set({ folderNames });
     });
   });
@@ -35,7 +37,7 @@ function folderInput(c, folderNames) {
 async function render() {
   const { courses } = await chrome.storage.local.get({ courses: {} });
   const { folderNames } = await chrome.storage.sync.get({ folderNames: {} });
-  const rows = Object.values(courses).sort((a, b) =>
+  const rows = Object.entries(courses).map(([id, c]) => ({ id, ...c })).sort((a, b) =>
     (b.semester || "").localeCompare(a.semester || "") || (a.name || "").localeCompare(b.name || "", "ko"));
   const tbody = document.querySelector("#list tbody");
   tbody.textContent = "";
@@ -43,7 +45,7 @@ async function render() {
     const tr = document.createElement("tr");
     cell(tr, c.name || "(이름 없음)");
     cell(tr).appendChild(folderInput(c, folderNames));
-    cell(tr, c.code);
+    cell(tr, c.code || "비교과");
     cell(tr, c.semester);
     tbody.appendChild(tr);
   }
