@@ -62,28 +62,49 @@ function collectLinks() {
   return [...urls];
 }
 
+// 확장을 새로고침·업데이트하면 이미 열린 탭의 이 스크립트는 확장과 끊긴 채 남는다.
+// 그때 sendMessage는 Promise 대신 "Extension context invalidated" 예외를 바로 던지므로
+// try로 잡고, 끊겼으면 리스너를 모두 떼고 조용히 멈춘다. (새로고침한 탭에는 새 스크립트가 들어감)
+function send(msg) {
+  if (!chrome.runtime?.id) return stop();
+  try {
+    chrome.runtime.sendMessage(msg).catch(() => {});
+  } catch (_) {
+    stop();
+  }
+}
+
 function report() {
   const courseId = detectCourseId();
   if (!courseId) return;
-  chrome.runtime.sendMessage({
+  send({
     type: "page",
     courseId,
     course: detectCourse(),
     links: collectLinks()
-  }).catch(() => {});
+  });
 }
 
 // 클릭한 순간의 과목을 기록 (다운로드 직전 신호)
-document.addEventListener("mousedown", (e) => {
+function onMouseDown(e) {
   const a = e.target.closest?.("a[href]");
   const courseId = detectCourseId();
   if (!a || !courseId) return;
-  chrome.runtime.sendMessage({ type: "click", courseId, href: a.href }).catch(() => {});
-}, true);
+  send({ type: "click", courseId, href: a.href });
+}
 
-report();
 let timer = null;
-new MutationObserver(() => {
+const observer = new MutationObserver(() => {
   clearTimeout(timer);
   timer = setTimeout(report, 1000);
-}).observe(document.documentElement, { childList: true, subtree: true });
+});
+
+function stop() {
+  document.removeEventListener("mousedown", onMouseDown, true);
+  observer.disconnect();
+  clearTimeout(timer);
+}
+
+document.addEventListener("mousedown", onMouseDown, true);
+observer.observe(document.documentElement, { childList: true, subtree: true });
+report();
