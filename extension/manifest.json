@@ -1,12 +1,11 @@
 {
   "manifest_version": 3,
   "name": "I-class 강의자료 자동 분류",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "인하대 I-class(learn.inha.ac.kr)에서 받은 강의자료를 과목별 폴더에 자동 저장합니다. (비공식)",
   "permissions": [
     "downloads",
-    "storage",
-    "tabs"
+    "storage"
   ],
   "host_permissions": [
     "https://learn.inha.ac.kr/*"
