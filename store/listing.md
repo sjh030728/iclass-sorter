@@ -81,7 +81,7 @@ I-class 과목 페이지에서 파일을 받으면 다운로드\I-class\<과목�
 - 단일 목적과 관련 없는 목적으로 사용자 데이터를 사용하거나 전송하지 않음
 - 신용도 판단이나 대출 목적으로 사용자 데이터를 사용하거나 전송하지 않음
 
-**개인정보처리방침 URL**: PRIVACY.md를 공개 URL로 게시한 뒤 입력
+**개인정보처리방침 URL**: https://github.com/sjh030728/iclass-sorter/blob/main/PRIVACY.md
 
 ---
 

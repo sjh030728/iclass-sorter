@@ -35,7 +35,7 @@
 
 ## 5. 문의
 
-<연락처 이메일>
+sjh030728@inha.edu
 
 ---
 
@@ -45,4 +45,4 @@ This unofficial extension saves files downloaded from Inha University I-class (l
 into per-course folders. **It does not collect, transmit, or sell any data.** Course names/codes,
 I-class material links, and user settings are stored only in the browser's own storage
 (local/session/sync) to decide the destination folder. No analytics, ads, or remote servers are used.
-Uninstalling the extension removes all stored data. Contact: <contact email>
+Uninstalling the extension removes all stored data. Contact: sjh030728@inha.edu
