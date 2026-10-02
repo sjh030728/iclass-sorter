@@ -77,12 +77,24 @@ function semesterLabel(sem) {
   return `${y}-${t}`;
 }
 
+// 1.0.3 이하는 분반에 영문자가 섞인 과목(예: -Y04)을 코드 없는 비교과로 인식해서
+// 폴더 이름을 "id:<강좌 번호>" 키로 저장했음. 코드가 잡히면 그 이름을 코드 키로 옮김.
+async function moveFolderName(courseId, code) {
+  const { folderNames } = await chrome.storage.sync.get({ folderNames: {} });
+  const old = folderNames["id:" + courseId];
+  if (old === undefined) return;
+  if (!(code in folderNames)) folderNames[code] = old;
+  delete folderNames["id:" + courseId];
+  await chrome.storage.sync.set({ folderNames });
+}
+
 chrome.runtime.onMessage.addListener((msg, sender) => {
   (async () => {
     const st = await state();
     if (msg.type === "page") {
       if (msg.course) {
         const prev = st.courses[msg.courseId] || {};
+        if (prev.code === "" && msg.course.code) await moveFolderName(msg.courseId, msg.course.code);
         st.courses[msg.courseId] = {
           code: msg.course.code,
           semester: msg.course.semester,
