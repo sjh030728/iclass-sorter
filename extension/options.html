@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>I-class 자동 분류 설정</title>
+<style>
+  body { font-family: "Malgun Gothic", system-ui, sans-serif; margin: 24px; max-width: 560px; color: #1f2328; }
+  h1 { font-size: 18px; margin: 0 0 16px; }
+  h2 { font-size: 15px; margin: 24px 0 8px; }
+  label { display: flex; gap: 8px; align-items: center; }
+  .hint { color: #59636e; font-size: 13px; margin: 4px 0 0 24px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { border-bottom: 1px solid #d1d9e0; padding: 6px 4px; text-align: left; }
+  #empty { color: #59636e; font-size: 13px; }
+  button { margin-top: 12px; padding: 6px 12px; }
+  #saved { color: #1a7f37; font-size: 13px; margin-left: 8px; }
+  td input { width: 100%; box-sizing: border-box; font: inherit; padding: 2px 4px; }
+</style>
+</head>
+<body>
+  <h1>I-class 강의자료 자동 분류</h1>
+
+  <h2>저장 방식</h2>
+  <label><input type="checkbox" id="bySemester"> 학기별 폴더로 나누기</label>
+  <p class="hint">켜면 <code>I-class\2026년 2학기\이산구조</code>, 끄면 <code>I-class\이산구조</code>에 저장돼요.</p>
+  <span id="saved"></span>
+
+  <h2>인식된 과목</h2>
+  <p class="hint" style="margin-left:0">과목 페이지에 한 번 들어가면 여기 추가돼요. 여기 없는 과목의 파일은 <b>미분류</b> 폴더로 가요.</p>
+  <table id="list" hidden>
+    <thead><tr><th>과목명</th><th>폴더 이름</th><th>코드</th><th>학기</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="hint" style="margin-left:0">폴더 이름을 비워 두면 과목명을 그대로 써요. 바꾼 뒤 받는 파일부터 새 이름 폴더에 저장되니,
+    이미 받은 파일이 있으면 탐색기에서 기존 폴더 이름도 똑같이 바꿔 주세요.</p>
+  <p id="empty">아직 인식된 과목이 없어요.</p>
+  <button id="reset">과목 목록 초기화</button>
+
+  <script src="options.js"></script>
+</body>
+</html>
