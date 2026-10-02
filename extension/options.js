@@ -34,29 +34,110 @@ function folderInput(c, folderNames) {
   return input;
 }
 
+// background.js semesterLabel과 같은 규칙
+function semesterLabel(sem) {
+  if (!sem) return "비교과·기타";
+  const y = sem.slice(0, 4), t = sem.slice(4);
+  if (t === "01") return `${y}년 1학기`;
+  if (t === "02") return `${y}년 2학기`;
+  return `${y}-${t}`;
+}
+
+// 학기별로 접을 수 있게 묶음. 가장 최근 학기만 펼쳐 둔다.
 async function render() {
   const { courses } = await chrome.storage.local.get({ courses: {} });
   const { folderNames } = await chrome.storage.sync.get({ folderNames: {} });
-  const rows = Object.entries(courses).map(([id, c]) => ({ id, ...c })).sort((a, b) =>
-    (b.semester || "").localeCompare(a.semester || "") || (a.name || "").localeCompare(b.name || "", "ko"));
-  const tbody = document.querySelector("#list tbody");
-  tbody.textContent = "";
-  for (const c of rows) {
-    const tr = document.createElement("tr");
-    cell(tr, c.name || "(이름 없음)");
-    cell(tr).appendChild(folderInput(c, folderNames));
-    cell(tr, c.code || "비교과");
-    cell(tr, c.semester);
-    tbody.appendChild(tr);
+  const groups = new Map();
+  for (const [id, c] of Object.entries(courses)) {
+    const sem = c.semester || "";
+    if (!groups.has(sem)) groups.set(sem, []);
+    groups.get(sem).push({ id, ...c });
   }
-  document.getElementById("list").hidden = rows.length === 0;
-  document.getElementById("empty").hidden = rows.length > 0;
+  // 최근 학기 먼저, 학기 없는 비교과는 맨 뒤
+  const sems = [...groups.keys()].sort((a, b) => (!a) - (!b) || b.localeCompare(a));
+  const list = document.getElementById("list");
+  list.textContent = "";
+  sems.forEach((sem, i) => {
+    const rows = groups.get(sem).sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"));
+    const details = document.createElement("details");
+    details.open = i === 0;
+    const summary = document.createElement("summary");
+    summary.textContent = semesterLabel(sem) + " ";
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = `${rows.length}과목`;
+    summary.appendChild(count);
+    details.appendChild(summary);
+    const table = document.createElement("table");
+    table.innerHTML = "<thead><tr><th>과목명</th><th>폴더 이름</th><th>코드</th><th></th></tr></thead><tbody></tbody>";
+    const tbody = table.querySelector("tbody");
+    for (const c of rows) {
+      const tr = document.createElement("tr");
+      cell(tr, c.name || "(이름 없음)");
+      const input = folderInput(c, folderNames);
+      cell(tr).appendChild(input);
+      cell(tr, c.code || "비교과");
+      cell(tr).appendChild(deleteButton("삭제", () => forget([c.id])));
+      tr.dataset.text = [c.name, c.code].join(" ").toLowerCase();
+      tr._folder = input;
+      tbody.appendChild(tr);
+    }
+    details.appendChild(table);
+    const label = semesterLabel(sem);
+    details.appendChild(deleteButton(`${label} 목록 지우기`, () => {
+      if (confirm(`${label} 과목 ${rows.length}개를 목록에서 지울까요? 과목 페이지에 다시 들어가면 다시 인식돼요.`)) {
+        forget(rows.map((c) => c.id));
+      }
+    }));
+    list.appendChild(details);
+  });
+  const total = Object.keys(courses).length;
+  document.getElementById("search").hidden = total === 0;
+  document.getElementById("empty").hidden = total > 0;
+  filter();
 }
 
-document.getElementById("reset").addEventListener("click", () => {
-  if (confirm("인식된 과목 목록을 지울까요? 과목 페이지에 다시 들어가면 다시 인식돼요.")) {
-    chrome.storage.local.set({ courses: {} }, render);
+// 검색어가 있으면 맞는 과목만 보이고 그 학기는 펼침. 지우면 원래 펼침 상태로 돌아감.
+function filter() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  let any = false;
+  for (const details of document.querySelectorAll("#list details")) {
+    let shown = 0;
+    for (const tr of details.querySelectorAll("tbody tr")) {
+      const hit = !q || (tr.dataset.text + " " + tr._folder.value.toLowerCase()).includes(q);
+      tr.hidden = !hit;
+      if (hit) shown++;
+    }
+    details.hidden = shown === 0;
+    if (q) {
+      if (details.dataset.wasOpen === undefined) details.dataset.wasOpen = details.open ? "1" : "";
+      details.open = shown > 0;
+    } else if (details.dataset.wasOpen !== undefined) {
+      details.open = details.dataset.wasOpen === "1";
+      delete details.dataset.wasOpen;
+    }
+    any ||= shown > 0;
   }
-});
+  document.getElementById("nomatch").hidden = !q || any;
+}
+
+document.getElementById("search").addEventListener("input", filter);
+
+// 목록에서만 지움. 폴더 이름 설정과 이미 받은 파일은 그대로이고, 과목 페이지에 다시 들어가면 다시 인식됨.
+// background.js가 storage.onChanged로 캐시를 맞춤
+async function forget(ids) {
+  const { courses } = await chrome.storage.local.get({ courses: {} });
+  for (const id of ids) delete courses[id];
+  await chrome.storage.local.set({ courses });
+  render();
+}
+
+function deleteButton(label, onClick) {
+  const b = document.createElement("button");
+  b.className = "del";
+  b.textContent = label;
+  b.addEventListener("click", onClick);
+  return b;
+}
 
 render();

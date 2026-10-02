@@ -121,7 +121,7 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   await save();
 });
 
-// 설정 페이지에서 "과목 목록 초기화"를 누르면 캐시도 비웁니다.
+// 설정 페이지에서 과목을 목록에서 지우면 캐시에도 반영합니다.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.courses && cache) {
     cache.courses = changes.courses.newValue || {};

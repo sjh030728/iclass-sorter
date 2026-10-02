@@ -15,6 +15,16 @@
   button { margin-top: 12px; padding: 6px 12px; }
   #saved { color: #1a7f37; font-size: 13px; margin-left: 8px; }
   td input { width: 100%; box-sizing: border-box; font: inherit; padding: 2px 4px; }
+  #search { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 4px 6px; margin: 8px 0; }
+  details { margin: 4px 0; }
+  summary { cursor: pointer; font-size: 14px; font-weight: 600; padding: 6px 0; }
+  summary .count { color: #59636e; font-weight: normal; font-size: 13px; }
+  details table { margin-bottom: 8px; table-layout: fixed; }
+  details th:nth-child(1) { width: 42%; }
+  details th:nth-child(3) { width: 18%; }
+  details th:nth-child(4) { width: 52px; }
+  button.del { margin: 0; padding: 2px 8px; font-size: 12px; }
+  details > button.del { margin: 0 0 8px; }
 </style>
 </head>
 <body>
@@ -27,14 +37,13 @@
 
   <h2>인식된 과목</h2>
   <p class="hint" style="margin-left:0">과목 페이지에 한 번 들어가면 여기 추가돼요. 여기 없는 과목의 파일은 <b>미분류</b> 폴더로 가요.</p>
-  <table id="list" hidden>
-    <thead><tr><th>과목명</th><th>폴더 이름</th><th>코드</th><th>학기</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <input type="search" id="search" placeholder="과목명·코드·폴더 이름으로 찾기" hidden>
+  <div id="list"></div>
+  <p id="nomatch" class="hint" style="margin-left:0" hidden>찾는 과목이 없어요.</p>
   <p class="hint" style="margin-left:0">폴더 이름을 비워 두면 과목명을 그대로 써요. 바꾼 뒤 받는 파일부터 새 이름 폴더에 저장되니,
     이미 받은 파일이 있으면 탐색기에서 기존 폴더 이름도 똑같이 바꿔 주세요.</p>
   <p id="empty">아직 인식된 과목이 없어요.</p>
-  <button id="reset">과목 목록 초기화</button>
+  <p class="hint" style="margin-left:0">더 이상 안 듣는 과목은 <b>삭제</b>로 목록에서 뺄 수 있어요. 받은 파일과 폴더 이름 설정은 그대로 남아요.</p>
 
   <script src="options.js"></script>
 </body>
