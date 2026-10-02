@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>I-class 자동 분류 설정</title>
 <style>
-  body { font-family: "Malgun Gothic", system-ui, sans-serif; margin: 24px; max-width: 560px; color: #1f2328; }
+  body { font-family: "Malgun Gothic", system-ui, sans-serif; margin: 24px; max-width: 760px; color: #1f2328; }
   h1 { font-size: 18px; margin: 0 0 16px; }
   h2 { font-size: 15px; margin: 24px 0 8px; }
   label { display: flex; gap: 8px; align-items: center; }
@@ -14,14 +14,14 @@
   #empty { color: #59636e; font-size: 13px; }
   button { margin-top: 12px; padding: 6px 12px; }
   #saved { color: #1a7f37; font-size: 13px; margin-left: 8px; }
-  td input { width: 100%; box-sizing: border-box; font: inherit; padding: 2px 4px; }
+  td input { width: 100%; box-sizing: border-box; font: inherit; padding: 2px 4px; text-overflow: ellipsis; }
   #search { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 4px 6px; margin: 8px 0; }
   details { margin: 4px 0; }
   summary { cursor: pointer; font-size: 14px; font-weight: 600; padding: 6px 0; }
   summary .count { color: #59636e; font-weight: normal; font-size: 13px; }
   details table { margin-bottom: 8px; table-layout: fixed; }
-  details th:nth-child(1) { width: 42%; }
-  details th:nth-child(3) { width: 18%; }
+  details th:nth-child(1) { width: 38%; }
+  details th:nth-child(3) { width: 72px; }
   details th:nth-child(4) { width: 52px; }
   button.del { margin: 0; padding: 2px 8px; font-size: 12px; }
   details > button.del { margin: 0 0 8px; }
@@ -40,7 +40,7 @@
   <input type="search" id="search" placeholder="과목명·코드·폴더 이름으로 찾기" hidden>
   <div id="list"></div>
   <p id="nomatch" class="hint" style="margin-left:0" hidden>찾는 과목이 없어요.</p>
-  <p class="hint" style="margin-left:0">폴더 이름을 비워 두면 과목명을 그대로 써요. 바꾼 뒤 받는 파일부터 새 이름 폴더에 저장되니,
+  <p class="hint" style="margin-left:0">폴더 이름을 비워 두면 칸에 흐리게 보이는 이름을 써요 (과목명에서 <code>:</code> 같은 폴더에 못 쓰는 문자만 뺀 것). 바꾼 뒤 받는 파일부터 새 이름 폴더에 저장되니,
     이미 받은 파일이 있으면 탐색기에서 기존 폴더 이름도 똑같이 바꿔 주세요.</p>
   <p id="empty">아직 인식된 과목이 없어요.</p>
   <p class="hint" style="margin-left:0">더 이상 안 듣는 과목은 <b>삭제</b>로 목록에서 뺄 수 있어요. 받은 파일과 폴더 이름 설정은 그대로 남아요.</p>

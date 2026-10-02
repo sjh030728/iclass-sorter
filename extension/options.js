@@ -16,13 +16,27 @@ function cell(tr, text) {
   return td;
 }
 
+// background.js safeName과 같은 규칙 (실제로 만들어지는 폴더명을 보여 주려고)
+function safeName(name) {
+  return name
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[. ]+$/, "")
+    .slice(0, 80);
+}
+
 // 폴더 이름은 과목 코드(예: CSE1103) 기준으로 chrome.storage.sync.folderNames에 저장
 // 비교과처럼 코드가 없으면 "id:<강좌 번호>"를 키로 씀 (background.js folderFor와 같은 규칙)
 function folderInput(c, folderNames) {
   const key = c.code || "id:" + c.id;
   const input = document.createElement("input");
   input.value = folderNames[key] || "";
-  input.placeholder = c.name || c.code;
+  input.placeholder = safeName(c.name || "") || c.code;
+  // 칸보다 긴 이름은 마우스를 올리면 전체가 보이게
+  const tip = () => { input.title = input.value || input.placeholder; };
+  tip();
+  input.addEventListener("input", tip);
   input.addEventListener("change", () => {
     chrome.storage.sync.get({ folderNames: {} }, ({ folderNames }) => {
       const v = input.value.trim();
