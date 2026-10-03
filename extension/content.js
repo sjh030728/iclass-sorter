@@ -1,20 +1,7 @@
 // I-class 페이지에서 "지금 어떤 과목 페이지인지(과목 번호·코드·이름)"와
 // "이 페이지에 있는 파일 링크"를 백그라운드에 알려 줍니다.
 
-// 예: "이산구조[202602-CSE1312-002]", 분반에 영문자가 섞이기도 함: "커리어 디자인 1[202601-GEB1117-Y04]"
-const COURSE_RE = /([^\[\]\n]*?)\s*\[(\d{6})-([A-Z]{2,4}\d{4})-[A-Z\d]{3}\]/g;
-
-function coursesIn(text) {
-  if (!text) return [];
-  const found = new Map();
-  for (const m of text.matchAll(COURSE_RE)) {
-    let name = m[1].replace(/^\s*(강좌|과목|Course)\s*[:：]\s*/i, "").trim();
-    if (!found.has(m[3]) || (!found.get(m[3]).name && name)) {
-      found.set(m[3], { code: m[3], semester: m[2], name });
-    }
-  }
-  return [...found.values()];
-}
+// COURSE_RE, coursesIn은 common.js (manifest에서 먼저 불러옴)
 
 // 과목 찾기: 탭 제목 → 상단 경로/제목 영역 순으로, 과목이 딱 하나만 보일 때만 인정
 // (I-class 탭 제목은 항상 "인하대학교 I-Class"라서 실제로는 .coursename / h1에서 찾음)

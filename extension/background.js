@@ -1,6 +1,8 @@
 // I-class 강의자료 자동 분류 (배포용)
 // 과목 페이지에서 읽은 과목명으로 폴더를 만들어 저장합니다. 과목 목록을 따로 적을 필요가 없어요.
 
+importScripts("common.js"); // safeName, semesterLabel
+
 const ROOT = "I-class";          // 다운로드 폴더 안의 하위 폴더
 const UNSORTED = "미분류";        // 과목을 못 알아냈을 때
 const CLICK_WINDOW_MS = 60 * 1000;
@@ -60,23 +62,6 @@ function remember(links, url, courseId) {
   if (cm) links[cm] = courseId;
 }
 
-// Windows/Mac에서 폴더 이름으로 쓸 수 없는 문자 정리
-function safeName(name) {
-  return name
-    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/[. ]+$/, "")
-    .slice(0, 80);
-}
-
-function semesterLabel(sem) {
-  const y = sem.slice(0, 4), t = sem.slice(4);
-  if (t === "01") return `${y}년 1학기`;
-  if (t === "02") return `${y}년 2학기`;
-  return `${y}-${t}`;
-}
-
 // 1.0.3 이하는 분반에 영문자가 섞인 과목(예: -Y04)을 코드 없는 비교과로 인식해서
 // 폴더 이름을 "id:<강좌 번호>" 키로 저장했음. 코드가 잡히면 그 이름을 코드 키로 옮김.
 async function moveFolderName(courseId, code) {
@@ -88,13 +73,20 @@ async function moveFolderName(courseId, code) {
   await chrome.storage.sync.set({ folderNames });
 }
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
+// courses는 여기서만 저장한다. 설정 페이지에서 지울 때도 "forget" 메시지로 부탁함
+// (설정 페이지가 직접 쓰면 이쪽의 save()가 옛 목록으로 덮어써서 지운 과목이 되살아날 수 있음)
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   (async () => {
     const st = await state();
     if (msg.type === "page") {
       if (msg.course) {
         const prev = st.courses[msg.courseId] || {};
-        if (prev.code === "" && msg.course.code) await moveFolderName(msg.courseId, msg.course.code);
+        // 목록에서 지운 뒤 다시 인식된 과목도 옮기도록 이전 기록과 상관없이 확인.
+        // 실패해도 과목·링크 기록은 계속 저장
+        if (msg.course.code) {
+          await moveFolderName(msg.courseId, msg.course.code)
+            .catch((e) => console.warn("폴더 이름 옮기기 실패", e));
+        }
         st.courses[msg.courseId] = {
           code: msg.course.code,
           semester: msg.course.semester,
@@ -110,22 +102,18 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
     } else if (msg.type === "click") {
       st.lastClick = { courseId: msg.courseId, time: Date.now() };
       remember(st.links, msg.href, msg.courseId);
+    } else if (msg.type === "forget") {
+      for (const id of msg.ids) delete st.courses[id];
     }
     await save();
-  })();
+  })().finally(() => sendResponse());
+  return true; // 저장이 끝난 뒤 응답 (설정 페이지가 그다음 목록을 다시 그림)
 });
 
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const st = await state();
   delete st.tabs[tabId];
   await save();
-});
-
-// 설정 페이지에서 과목을 목록에서 지우면 캐시에도 반영합니다.
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.courses && cache) {
-    cache.courses = changes.courses.newValue || {};
-  }
 });
 
 function isIclass(url) {

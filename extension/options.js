@@ -16,16 +16,6 @@ function cell(tr, text) {
   return td;
 }
 
-// background.js safeName과 같은 규칙 (실제로 만들어지는 폴더명을 보여 주려고)
-function safeName(name) {
-  return name
-    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/[. ]+$/, "")
-    .slice(0, 80);
-}
-
 // 폴더 이름은 과목 코드(예: CSE1103) 기준으로 chrome.storage.sync.folderNames에 저장
 // 비교과처럼 코드가 없으면 "id:<강좌 번호>"를 키로 씀 (background.js folderFor와 같은 규칙)
 function folderInput(c, folderNames) {
@@ -48,13 +38,9 @@ function folderInput(c, folderNames) {
   return input;
 }
 
-// background.js semesterLabel과 같은 규칙
-function semesterLabel(sem) {
-  if (!sem) return "비교과·기타";
-  const y = sem.slice(0, 4), t = sem.slice(4);
-  if (t === "01") return `${y}년 1학기`;
-  if (t === "02") return `${y}년 2학기`;
-  return `${y}-${t}`;
+// safeName, semesterLabel은 common.js
+function groupLabel(sem) {
+  return sem ? semesterLabel(sem) : "비교과·기타";
 }
 
 // 학기별로 접을 수 있게 묶음. 가장 최근 학기만 펼쳐 둔다.
@@ -76,7 +62,7 @@ async function render() {
     const details = document.createElement("details");
     details.open = i === 0;
     const summary = document.createElement("summary");
-    summary.textContent = semesterLabel(sem) + " ";
+    summary.textContent = groupLabel(sem) + " ";
     const count = document.createElement("span");
     count.className = "count";
     count.textContent = `${rows.length}과목`;
@@ -97,7 +83,7 @@ async function render() {
       tbody.appendChild(tr);
     }
     details.appendChild(table);
-    const label = semesterLabel(sem);
+    const label = groupLabel(sem);
     details.appendChild(deleteButton(`${label} 목록 지우기`, () => {
       if (confirm(`${label} 과목 ${rows.length}개를 목록에서 지울까요? 과목 페이지에 다시 들어가면 다시 인식돼요.`)) {
         forget(rows.map((c) => c.id));
@@ -138,11 +124,9 @@ function filter() {
 document.getElementById("search").addEventListener("input", filter);
 
 // 목록에서만 지움. 폴더 이름 설정과 이미 받은 파일은 그대로이고, 과목 페이지에 다시 들어가면 다시 인식됨.
-// background.js가 storage.onChanged로 캐시를 맞춤
+// 저장은 background.js가 함 (forget 메시지)
 async function forget(ids) {
-  const { courses } = await chrome.storage.local.get({ courses: {} });
-  for (const id of ids) delete courses[id];
-  await chrome.storage.local.set({ courses });
+  await chrome.runtime.sendMessage({ type: "forget", ids });
   render();
 }
 
