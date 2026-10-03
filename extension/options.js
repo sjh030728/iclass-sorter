@@ -11,7 +11,7 @@ box.addEventListener("change", () => {
 
 function cell(tr, text) {
   const td = document.createElement("td");
-  td.textContent = text || "";
+  td.textContent = text;
   tr.appendChild(td);
   return td;
 }
