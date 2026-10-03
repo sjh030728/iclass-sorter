@@ -1,7 +1,7 @@
 // I-class 페이지에서 "지금 어떤 과목 페이지인지(과목 번호·코드·이름)"와
 // "이 페이지에 있는 파일 링크"를 백그라운드에 알려 줍니다.
 
-// COURSE_RE, coursesIn은 common.js (manifest에서 먼저 불러옴)
+// coursesIn은 common.js (manifest에서 먼저 불러옴)
 
 // 과목 찾기: 탭 제목 → 상단 경로/제목 영역 순으로, 과목이 딱 하나만 보일 때만 인정
 // (I-class 탭 제목은 항상 "인하대학교 I-Class"라서 실제로는 .coursename / h1에서 찾음)
@@ -27,11 +27,8 @@ function detectCourse() {
 
 // Moodle은 과목 안의 모든 페이지 <body>에 "course-<번호>" 클래스를 붙입니다. (1번은 메인/대시보드)
 function detectCourseId() {
-  const m = (document.body?.className || "").match(/\bcourse-(\d+)\b/);
-  if (m && m[1] !== "1") return m[1];
-  const u = new URL(location.href);
-  if (u.pathname.includes("/course/view.php")) return u.searchParams.get("id");
-  return null;
+  const m = document.body.className.match(/\bcourse-(\d+)\b/);
+  return m && m[1] !== "1" ? m[1] : null;
 }
 
 function collectLinks() {
@@ -53,7 +50,6 @@ function collectLinks() {
 // 그때 sendMessage는 Promise 대신 "Extension context invalidated" 예외를 바로 던지므로
 // try로 잡고, 끊겼으면 리스너를 모두 떼고 조용히 멈춘다. (새로고침한 탭에는 새 스크립트가 들어감)
 function send(msg) {
-  if (!chrome.runtime?.id) return stop();
   try {
     chrome.runtime.sendMessage(msg).catch(() => {});
   } catch (_) {
@@ -74,7 +70,7 @@ function report() {
 
 // 클릭한 순간의 과목을 기록 (다운로드 직전 신호)
 function onMouseDown(e) {
-  const a = e.target.closest?.("a[href]");
+  const a = e.target.closest("a[href]");
   const courseId = detectCourseId();
   if (!a || !courseId) return;
   send({ type: "click", courseId, href: a.href });

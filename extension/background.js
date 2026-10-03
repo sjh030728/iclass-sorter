@@ -1,31 +1,26 @@
-// I-class 강의자료 자동 분류 (배포용)
+// I-class 강의자료 자동 분류
 // 과목 페이지에서 읽은 과목명으로 폴더를 만들어 저장합니다. 과목 목록을 따로 적을 필요가 없어요.
 
 importScripts("common.js"); // safeName, semesterLabel
 
-const ROOT = "I-class";          // 다운로드 폴더 안의 하위 폴더
 const UNSORTED = "미분류";        // 과목을 못 알아냈을 때
-const CLICK_WINDOW_MS = 60 * 1000;
 const MAX_LINKS = 5000;
 
 // 서비스 워커가 깨어날 때 메시지가 동시에 와도 한 번만 읽도록 Promise를 공유
 // (각자 읽으면 나중에 읽은 쪽이 cache를 덮어써서 먼저 들어온 기록이 사라짐)
 let cache = null;
 let loading = null;
-async function state() {
-  if (cache) return cache;
-  loading ??= (async () => {
+function state() {
+  return loading ??= (async () => {
     const s = await chrome.storage.session.get(["links", "tabs", "lastClick"]);
     const l = await chrome.storage.local.get(["courses"]);
-    cache = {
+    return cache = {
       links: s.links || {},
       tabs: s.tabs || {},
       lastClick: s.lastClick || null,
       courses: l.courses || {}   // courseId -> { code, semester, name } (비교과는 code가 "")
     };
-    return cache;
   })();
-  return loading;
 }
 async function save() {
   const { links, tabs, lastClick, courses } = cache;
@@ -80,7 +75,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const st = await state();
     if (msg.type === "page") {
       if (msg.course) {
-        const prev = st.courses[msg.courseId] || {};
         // 목록에서 지운 뒤 다시 인식된 과목도 옮기도록 이전 기록과 상관없이 확인.
         // 실패해도 과목·링크 기록은 계속 저장
         if (msg.course.code) {
@@ -90,7 +84,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         st.courses[msg.courseId] = {
           code: msg.course.code,
           semester: msg.course.semester,
-          name: msg.course.name || prev.name || ""
+          name: msg.course.name || st.courses[msg.courseId]?.name || ""
         };
       }
       if (sender.tab) st.tabs[sender.tab.id] = msg.courseId;
@@ -116,10 +110,6 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   await save();
 });
 
-function isIclass(url) {
-  try { return new URL(url).hostname === "learn.inha.ac.kr"; } catch (_) { return false; }
-}
-
 async function resolveCourseId(item) {
   const st = await state();
   for (const u of [item.url, item.finalUrl, item.referrer]) {
@@ -127,15 +117,13 @@ async function resolveCourseId(item) {
     const hit = st.links[norm(u)] || st.links[cmKey(u)];
     if (hit) return hit;
   }
-  if (item.referrer) {
-    try {
-      const r = new URL(item.referrer);
-      if (r.pathname.includes("/course/view.php") && r.searchParams.get("id")) {
-        return r.searchParams.get("id");
-      }
-    } catch (_) {}
-  }
-  if (st.lastClick && Date.now() - st.lastClick.time < CLICK_WINDOW_MS) {
+  try {
+    const r = new URL(item.referrer);
+    if (r.pathname.includes("/course/view.php") && r.searchParams.get("id")) {
+      return r.searchParams.get("id");
+    }
+  } catch (_) {}
+  if (st.lastClick && Date.now() - st.lastClick.time < 60 * 1000) {
     return st.lastClick.courseId;
   }
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
@@ -154,7 +142,9 @@ async function folderFor(item) {
 }
 
 chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
-  const related = [item.url, item.finalUrl, item.referrer].some((u) => u && isIclass(u));
+  const related = [item.url, item.finalUrl, item.referrer].some((u) => {
+    try { return new URL(u).hostname === "learn.inha.ac.kr"; } catch (_) { return false; }
+  });
   if (!related) {
     suggest();
     return;
@@ -166,8 +156,7 @@ chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
     } catch (e) {
       console.warn("I-class 분류 실패", e);
     }
-    const base = item.filename.split(/[\\/]/).pop();
-    suggest({ filename: `${ROOT}/${folder}/${base}`, conflictAction: "uniquify" });
+    suggest({ filename: `I-class/${folder}/${item.filename.split(/[\\/]/).pop()}`, conflictAction: "uniquify" });
   })();
   return true; // 비동기로 suggest 호출
 });

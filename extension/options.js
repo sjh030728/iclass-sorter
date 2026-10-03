@@ -16,32 +16,7 @@ function cell(tr, text) {
   return td;
 }
 
-// 폴더 이름은 과목 코드(예: CSE1103) 기준으로 chrome.storage.sync.folderNames에 저장
-// 비교과처럼 코드가 없으면 "id:<강좌 번호>"를 키로 씀 (background.js folderFor와 같은 규칙)
-function folderInput(c, folderNames) {
-  const key = c.code || "id:" + c.id;
-  const input = document.createElement("input");
-  input.value = folderNames[key] || "";
-  input.placeholder = safeName(c.name || "") || c.code;
-  // 칸보다 긴 이름은 마우스를 올리면 전체가 보이게
-  const tip = () => { input.title = input.value || input.placeholder; };
-  tip();
-  input.addEventListener("input", tip);
-  input.addEventListener("change", () => {
-    chrome.storage.sync.get({ folderNames: {} }, ({ folderNames }) => {
-      const v = input.value.trim();
-      if (v) folderNames[key] = v;
-      else delete folderNames[key];
-      chrome.storage.sync.set({ folderNames });
-    });
-  });
-  return input;
-}
-
 // safeName, semesterLabel은 common.js
-function groupLabel(sem) {
-  return sem ? semesterLabel(sem) : "비교과·기타";
-}
 
 // 학기별로 접을 수 있게 묶음. 가장 최근 학기만 펼쳐 둔다.
 async function render() {
@@ -59,10 +34,11 @@ async function render() {
   list.textContent = "";
   sems.forEach((sem, i) => {
     const rows = groups.get(sem).sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"));
+    const label = sem ? semesterLabel(sem) : "비교과·기타";
     const details = document.createElement("details");
     details.open = i === 0;
     const summary = document.createElement("summary");
-    summary.textContent = groupLabel(sem) + " ";
+    summary.textContent = label + " ";
     const count = document.createElement("span");
     count.className = "count";
     count.textContent = `${rows.length}과목`;
@@ -74,7 +50,24 @@ async function render() {
     for (const c of rows) {
       const tr = document.createElement("tr");
       cell(tr, c.name || "(이름 없음)");
-      const input = folderInput(c, folderNames);
+      // 폴더 이름은 과목 코드(예: CSE1103) 기준으로 chrome.storage.sync.folderNames에 저장
+      // 비교과처럼 코드가 없으면 "id:<강좌 번호>"를 키로 씀 (background.js folderFor와 같은 규칙)
+      const key = c.code || "id:" + c.id;
+      const input = document.createElement("input");
+      input.value = folderNames[key] || "";
+      input.placeholder = safeName(c.name || "") || c.code;
+      // 칸보다 긴 이름은 마우스를 올리면 전체가 보이게
+      const tip = () => { input.title = input.value || input.placeholder; };
+      tip();
+      input.addEventListener("input", tip);
+      input.addEventListener("change", () => {
+        chrome.storage.sync.get({ folderNames: {} }, ({ folderNames }) => {
+          const v = input.value.trim();
+          if (v) folderNames[key] = v;
+          else delete folderNames[key];
+          chrome.storage.sync.set({ folderNames });
+        });
+      });
       cell(tr).appendChild(input);
       cell(tr, c.code || "비교과");
       cell(tr).appendChild(deleteButton("삭제", () => forget([c.id])));
@@ -83,7 +76,6 @@ async function render() {
       tbody.appendChild(tr);
     }
     details.appendChild(table);
-    const label = groupLabel(sem);
     details.appendChild(deleteButton(`${label} 목록 지우기`, () => {
       if (confirm(`${label} 과목 ${rows.length}개를 목록에서 지울까요? 과목 페이지에 다시 들어가면 다시 인식돼요.`)) {
         forget(rows.map((c) => c.id));

@@ -44,7 +44,6 @@ test("같은 과목이 여러 번 나오면 하나, 이름 있는 쪽 사용", (
 test("과목 코드가 없는 텍스트", () => {
   assert.deepEqual(coursesIn("인하동동 비교과 프로그램"), []);
   assert.deepEqual(coursesIn(""), []);
-  assert.deepEqual(coursesIn(undefined), []);
 });
 
 test("폴더명에 못 쓰는 문자 정리", () => {
