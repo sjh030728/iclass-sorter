@@ -45,7 +45,7 @@ I-class 과목 페이지에서 파일을 받으면 다운로드\I-class\<과목�
 2. `2-settings.png` — 실제 options.html을 예시 과목 데이터로 렌더링
    - 다시 만들 때: `store/screenshots/src/`의 HTML을 크롬 headless로 1280×800 촬영
      (`chrome --headless=new --allow-file-access-from-files --window-size=1280,800 --screenshot=out.png <html>`).
-     shot2는 같은 폴더에 `extension/options.html`(shim.js 삽입본)과 `options.js` 복사본이 필요
+     shot2는 같은 폴더에 `extension/options.html`(common.js 앞에 shim.js 삽입한 것)과 `options.js`, `common.js` 복사본이 필요
 
 **아이콘**: extension/icons/128.png
 
