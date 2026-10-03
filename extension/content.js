@@ -41,7 +41,7 @@ function collectLinks() {
           (u.pathname.includes("/mod/") || u.pathname.includes("pluginfile.php"))) {
         urls.add(u.href);
       }
-    } catch (_) { /* 무시 */ }
+    } catch (_) {}
   });
   return [...urls];
 }
