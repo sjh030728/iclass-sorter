@@ -2,7 +2,6 @@
 const DATA = {
   local: { courses: {
     "74790": { code: "CSE1312", semester: "202602", name: "이산구조" },
-    "74806": { code: "CSE2211", semester: "202602", name: "논리회로" },
     "74787": { code: "CSE1103", semester: "202602", name: "객체지향프로그래밍 2" },
     "77336": { code: "MTH1902", semester: "202602", name: "일반수학 2" },
     "75742": { code: "GEB1108", semester: "202602", name: "의사소통 영어: 중급" },
