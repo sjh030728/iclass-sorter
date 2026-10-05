@@ -11,11 +11,17 @@
 
 [저장 위치]
 - 기본: 다운로드\I-class\<과목명>
-- 다른 폴더에 저장하려면 (Windows만, 선택 사항):
+- 다른 폴더에 저장하려면 (선택 사항):
   1) 바탕화면 연결 도구 받기:
      https://github.com/sjh030728/iclass-sorter/releases/latest/download/desktop-link.zip
-  2) 압축을 풀고 desktop-link.bat 실행
-     "Windows의 PC 보호" 창이 뜨면 "추가 정보" → "실행"을 누르세요.
+  2) 압축을 풀고 실행
+     Windows: desktop-link.bat 실행
+       "Windows의 PC 보호" 창이 뜨면 "추가 정보" → "실행"을 누르세요.
+     Mac: desktop-link.command 더블클릭
+       열 수 없다는 창이 뜨면 "완료"를 누르고 시스템 설정 → 개인정보 보호 및 보안 →
+       아래쪽 "그래도 열기"를 누르세요. (예전 macOS는 Control-클릭 → "열기")
+       그래도 안 되면 터미널을 열고 "bash "(뒤에 띄어쓰기)를 입력한 뒤
+       desktop-link.command 파일을 터미널 창에 끌어다 놓고 Return을 누르세요.
   3) 폴더 선택 창이 뜨면 원하는 폴더를 고르세요. 기본은 바탕화면\인하대학교 예요.
   다시 실행하면 다른 폴더로 바꿀 수 있어요. (이미 받은 파일은 원래 폴더에 남아요.)
   연결이 끝나면 압축을 푼 파일은 지워도 돼요.
