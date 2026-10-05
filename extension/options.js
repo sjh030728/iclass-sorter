@@ -16,7 +16,7 @@ function cell(tr, text) {
   return td;
 }
 
-// safeName, semesterLabel은 common.js
+// safeName, semesterLabel, semesterOrder는 common.js
 
 // 학기별로 접을 수 있게 묶음. 가장 최근 학기만 펼쳐 둔다.
 async function render() {
@@ -29,12 +29,12 @@ async function render() {
     groups.get(sem).push({ id, ...c });
   }
   // 최근 학기 먼저, 학기 없는 비교과는 맨 뒤
-  const sems = [...groups.keys()].sort((a, b) => (!a) - (!b) || b.localeCompare(a));
+  const sems = [...groups.keys()].sort((a, b) => (!a) - (!b) || semesterOrder(b) - semesterOrder(a));
   const list = document.getElementById("list");
   list.textContent = "";
   sems.forEach((sem, i) => {
     const rows = groups.get(sem).sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"));
-    const label = sem ? semesterLabel(sem) : "비교과·기타";
+    const label = sem ? semesterLabel(sem) : "비교과";
     const details = document.createElement("details");
     details.open = i === 0;
     const summary = document.createElement("summary");

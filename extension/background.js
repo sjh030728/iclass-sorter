@@ -138,7 +138,9 @@ async function folderFor(item) {
   if (!c) return UNSORTED;
   const { bySemester, folderNames } = await chrome.storage.sync.get({ bySemester: false, folderNames: {} });
   const course = safeName(folderNames[c.code || "id:" + courseId] || c.name) || c.code || UNSORTED;
-  return bySemester && c.semester ? `${semesterLabel(c.semester)}/${course}` : course;
+  if (!bySemester) return course;
+  // 비교과(과목 코드 없음)는 학기를 알 수 없어서 학기 폴더 대신 "비교과" 폴더에 모음
+  return c.code ? `${semesterLabel(c.semester)}/${course}` : `비교과/${course}`;
 }
 
 chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {

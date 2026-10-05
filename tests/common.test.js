@@ -6,8 +6,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const src = fs.readFileSync(path.join(__dirname, "../extension/common.js"), "utf8");
-const { coursesIn, safeName, semesterLabel } =
-  new Function(src + "\nreturn { coursesIn, safeName, semesterLabel };")();
+const { coursesIn, safeName, semesterLabel, semesterOrder } =
+  new Function(src + "\nreturn { coursesIn, safeName, semesterLabel, semesterOrder };")();
 
 test("과목 페이지 제목에서 과목 하나", () => {
   assert.deepEqual(coursesIn("이산구조[202602-CSE1312-002]"),
@@ -25,6 +25,13 @@ test("분반에 영문자가 섞인 과목 (1.0.3에서 비교과로 잘못 잡�
   assert.deepEqual(coursesIn("커리어 디자인 1[202601-GEB1117-Y04]"),
     [{ code: "GEB1117", semester: "202601", name: "커리어 디자인 1" }]);
   assert.equal(coursesIn("문해와 글쓰기[202601-GEB1126-Y07]")[0].code, "GEB1126");
+});
+
+test("계절학기 과목 (1.0.4까지 비교과로 잘못 잡힘)", () => {
+  assert.deepEqual(coursesIn("동화의이해[2026하계-GEE1006-901]"),
+    [{ code: "GEE1006", semester: "2026하계", name: "동화의이해" }]);
+  assert.deepEqual(coursesIn("공업수학 1[2025동계-ACE2901-901]"),
+    [{ code: "ACE2901", semester: "2025동계", name: "공업수학 1" }]);
 });
 
 test("앞에 붙은 '강좌:' 같은 머리말은 뺌", () => {
@@ -56,5 +63,13 @@ test("폴더명에 못 쓰는 문자 정리", () => {
 test("학기 표시", () => {
   assert.equal(semesterLabel("202601"), "2026년 1학기");
   assert.equal(semesterLabel("202602"), "2026년 2학기");
+  assert.equal(semesterLabel("2026하계"), "2026년 여름학기");
+  assert.equal(semesterLabel("2025동계"), "2025년 겨울학기");
   assert.equal(semesterLabel("202603"), "2026-03");
+});
+
+test("학기 순서: 한 해 안에서 1학기 → 여름 → 2학기 → 겨울, 다음 해로", () => {
+  const sems = ["202602", "2026동계", "202601", "2025동계", "2026하계", "202701"];
+  assert.deepEqual(sems.sort((a, b) => semesterOrder(a) - semesterOrder(b)),
+    ["2025동계", "202601", "2026하계", "202602", "2026동계", "202701"]);
 });
