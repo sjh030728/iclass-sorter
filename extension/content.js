@@ -3,10 +3,10 @@
 
 // coursesIn은 common.js (manifest에서 먼저 불러옴)
 
-// 과목 찾기: 탭 제목 → 상단 경로/제목 영역 순으로, 과목이 딱 하나만 보일 때만 인정
-// (I-class 탭 제목은 항상 "인하대학교 I-Class"라서 실제로는 .coursename / h1에서 찾음)
+// 과목 찾기: 상단 경로/제목 영역 순으로, 과목이 딱 하나만 보일 때만 인정
+// (대시보드처럼 여러 과목이 보이는 곳은 무시. 실제 I-class에서는 .coursename / h1에서 찾음)
 function detectCourse() {
-  const candidates = [document.title];
+  const candidates = [];
   const selectors = [
     ".breadcrumb", "nav[aria-label]", ".page-header-headings",
     ".coursename", ".course-title", "#page-header", "h1", "h2"

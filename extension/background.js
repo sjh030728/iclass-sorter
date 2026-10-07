@@ -1,5 +1,5 @@
 // I-class 강의자료 자동 분류
-// 과목 페이지에서 읽은 과목명으로 폴더를 만들어 저장합니다. 과목 목록을 따로 적을 필요가 없어요.
+// 과목 페이지에서 읽은 과목명으로 폴더를 만들어 저장합니다.
 
 importScripts("common.js"); // safeName, semesterLabel
 
@@ -57,17 +57,6 @@ function remember(links, url, courseId) {
   if (cm) links[cm] = courseId;
 }
 
-// 1.0.3 이하는 분반에 영문자가 섞인 과목(예: -Y04)을 코드 없는 비교과로 인식해서
-// 폴더 이름을 "id:<강좌 번호>" 키로 저장했음. 코드가 잡히면 그 이름을 코드 키로 옮김.
-async function moveFolderName(courseId, code) {
-  const { folderNames } = await chrome.storage.sync.get({ folderNames: {} });
-  const old = folderNames["id:" + courseId];
-  if (old === undefined) return;
-  if (!(code in folderNames)) folderNames[code] = old;
-  delete folderNames["id:" + courseId];
-  await chrome.storage.sync.set({ folderNames });
-}
-
 // courses는 여기서만 저장한다. 설정 페이지에서 지울 때도 "forget" 메시지로 부탁함
 // (설정 페이지가 직접 쓰면 이쪽의 save()가 옛 목록으로 덮어써서 지운 과목이 되살아날 수 있음)
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -75,12 +64,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const st = await state();
     if (msg.type === "page") {
       if (msg.course) {
-        // 목록에서 지운 뒤 다시 인식된 과목도 옮기도록 이전 기록과 상관없이 확인.
-        // 실패해도 과목·링크 기록은 계속 저장
-        if (msg.course.code) {
-          await moveFolderName(msg.courseId, msg.course.code)
-            .catch((e) => console.warn("폴더 이름 옮기기 실패", e));
-        }
         st.courses[msg.courseId] = {
           code: msg.course.code,
           semester: msg.course.semester,
