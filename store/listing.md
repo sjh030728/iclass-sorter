@@ -11,7 +11,7 @@
 
 **언어**: 한국어
 
-**카테고리**: 생산성 계열 (예: Workflow & Planning 또는 Tools 중 대시보드에 보이는 것)
+**카테고리**: 생산성 › Workflow & Planning
 
 **자세한 설명**:
 
@@ -42,10 +42,11 @@ I-class 과목 페이지에서 파일을 받으면 다운로드\I-class\<과목�
 
 **스크린샷** (1280×800): `store/screenshots/` 순서대로 업로드
 1. `1-folders.png` — 과목별 폴더에 저장된 모습 (그림으로 구성)
-2. `2-settings.png` — 실제 options.html을 예시 과목 데이터로 렌더링
-   - 다시 만들 때: `store/screenshots/src/`의 HTML을 크롬 headless로 1280×800 촬영
-     (`chrome --headless=new --allow-file-access-from-files --window-size=1280,800 --screenshot=out.png <html>`).
-     shot2는 같은 폴더에 `extension/options.html`(common.js 앞에 shim.js 삽입한 것)과 `options.js`, `common.js` 복사본이 필요
+2. `2-settings.png` — 실제 `extension/options.html`을 `src/shim.js`의 예시 과목 데이터로 렌더링
+
+다시 만들 때: `store/screenshots/src/shot1.html`, `shot2.html`을 크롬 headless로 1280×800 촬영
+(`chrome --headless=new --user-data-dir=<빈 임시 폴더> --allow-file-access-from-files --hide-scrollbars --window-size=1280,800 --screenshot=out.png <html 경로>`).
+shot2는 확장 폴더의 파일을 직접 읽으므로 설정 페이지를 고치면 다시 찍기만 하면 된다. 설정 페이지 길이가 바뀌면 shot2.html의 iframe 높이(672px)를 맞출 것.
 
 **아이콘**: extension/icons/128.png
 

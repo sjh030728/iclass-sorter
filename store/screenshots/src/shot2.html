@@ -19,6 +19,18 @@
   </div>
   <div class="win">
     <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="addr">I-class 자동 분류 설정</span></div>
-    <iframe src="options.html"></iframe>
+    <iframe id="settings"></iframe>
   </div>
+  <script>
+    // 실제 extension/options.html을 읽어 common.js 앞에 shim.js(예시 데이터)를 끼워 넣어 보여 줌.
+    // file:// 읽기라서 크롬을 --allow-file-access-from-files로 실행해야 함
+    const ext = new URL("../../../extension/", location.href).href;
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", ext + "options.html", false);
+    xhr.send();
+    document.getElementById("settings").srcdoc = xhr.responseText
+      .replace("<head>", `<head><base href="${ext}">`)
+      .replace('<script src="common.js">',
+        `<script src="${new URL("shim.js", location.href).href}"><\/script><script src="common.js">`);
+  </script>
 </body></html>
