@@ -34,6 +34,13 @@ test("계절학기 과목 (1.0.4까지 비교과로 잘못 잡힘)", () => {
     [{ code: "ACE2901", semester: "2025동계", name: "공업수학 1" }]);
 });
 
+test("합반 과목 (1.0.6까지 비교과로 잘못 잡힘)", () => {
+  assert.deepEqual(coursesIn("데이터베이스[202602-DSC2002-001~001]"),
+    [{ code: "DSC2002", semester: "202602", name: "데이터베이스" }]);
+  assert.deepEqual(coursesIn("회계원론[202602-CBA1906-005~004]"),
+    [{ code: "CBA1906", semester: "202602", name: "회계원론" }]);
+});
+
 test("앞에 붙은 '강좌:' 같은 머리말은 뺌", () => {
   assert.equal(coursesIn("강좌: 논리회로[202602-CSE2211-004]")[0].name, "논리회로");
 });
